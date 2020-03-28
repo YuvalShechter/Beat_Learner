@@ -14,9 +14,10 @@ out, _ = (ffmpeg
     .run(capture_stdout=True)
 )
 
+amplitudes = np.frombuffer(out, np.int16)
+
 fig = plt.figure()
 s = fig.add_subplot(111)
-amplitudes = np.frombuffer(out, np.int16)
 s.plot(amplitudes)
 fig.set_figwidth(100)
 fig.savefig('amplitude.png')
