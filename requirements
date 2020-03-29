@@ -1,0 +1,6 @@
+numpy>=1.18.2
+python-slugify>=4.0.0
+requests>=2.23.0
+scipy>=1.4.1
+pyquery>=1.4.1
+matplotlib>=3.2.1
