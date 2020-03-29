@@ -41,11 +41,11 @@ def scrapeLinks(url):
             linkFile.write(link.attr['href']+"\n")
 
 if __name__ == "__main__":
-    # for i in range(1,11):
-    #     scrapeLinks("https://bsaber.com/songs/top/page/{0}/?time=all".format(i))
+    for i in range(1,11):
+        scrapeLinks("https://bsaber.com/songs/top/page/{0}/?time=all".format(i))
 
     fulldictionary = {}
-    with open("links","r") as downloadLinks:
+    with open("links","r+") as downloadLinks:
         for link in downloadLinks:
             fulldictionary = download(link[:-1], fulldictionary)
-    pass
+        downloadLinks.truncate(0)
