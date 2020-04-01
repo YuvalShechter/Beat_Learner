@@ -1,0 +1,61 @@
+import ffmpeg
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import normalize
+
+# Algorithm from: https://towardsdatascience.com/understanding-audio-data-fourier-transform-fft-spectrogram-and-speech-recognition-a4072d228520
+# Samples is all song data
+# Sample Rate = Song Sample Rate / 2
+# Window S = ((BPM / 60)^-1)
+# Stride Frac = Fraction of Window Size That Composes A Stride (Overlap )
+def spectrogramize(samples, sample_rate, stride_frac = 0.5, 
+                          window_s = 20.0, max_freq = 10000, eps = 1e-14):
+
+    window_size = int(sample_rate * window_s)
+    stride_size = int(window_size * stride_frac)
+
+    # Extract strided windows
+    truncate_size = (len(samples) - window_size) % stride_size
+    samples = samples[:len(samples) - truncate_size]
+    nshape = (window_size, (len(samples) - window_size) // stride_size + 1)
+    nstrides = (samples.strides[0], samples.strides[0] * stride_size)
+    windows = np.lib.stride_tricks.as_strided(samples, 
+                                          shape = nshape, strides = nstrides)
+    
+    assert np.all(windows[:, 1] == samples[stride_size:(stride_size + window_size)])
+
+    # Window weighting, squared Fast Fourier Transform (fft), scaling
+    weighting = np.hanning(window_size)[:, None]
+    
+    fft = np.fft.rfft(windows * weighting, axis=0)
+    fft = np.absolute(fft)
+    fft = fft**2
+    
+    scale = np.sum(weighting**2) * sample_rate
+    fft[1:-1, :] *= (2.0 / scale)
+    fft[(0, -1), :] /= scale
+    
+    # Prepare fft frequency list
+    freqs = float(sample_rate) / window_size * np.arange(fft.shape[0])
+    
+    # Compute spectrogram feature
+    ind = np.where(freqs <= max_freq)[0][-1] + 1
+    specgram = np.log(fft[:ind, :] + eps)
+    return specgram
+
+def ffmpegProcessing():
+    mpl.rcParams['agg.path.chunksize'] = 10000
+
+    out, _ = (ffmpeg
+        .input("C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg")
+        .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='16k')
+        .overwrite_output()
+        .run(capture_stdout=True)
+    )
+
+    amplitudes = np.frombuffer(out, np.int16)
+    spectrogram = spectrogramize(amplitudes, 1600, 0.5, 0.5042, 15000)
+    plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
+
+ffmpegProcessing()
