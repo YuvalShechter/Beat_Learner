@@ -55,12 +55,24 @@ def ffmpegProcessing(songPath):
     )
 
     amplitudes = np.frombuffer(out, np.int16)
+    samplingRate = 44100
+    overlap = 0.25
+    windowSeconds = 0.1
+    maxFreqCutoff = 10000
+    isError = True
     # Samples, Sample Rate, Stride Factor, Window Size, Maximum Frequency, Epsilon (don't change)
-    spectrogram = spectrogramize(amplitudes, 44100, 0.25, 0.1, 10000)
-    print(np.shape(spectrogram))
+    while(isError):
+        try:
+            spectrogram = spectrogramize(amplitudes, samplingRate, overlap, windowSeconds, maxFreqCutoff)
+            isError = False
+        except MemoryError:
+            if overlap == 1.0:
+                raise MemoryError("Not enough RAM boi")
+            overlap+=0.25
     plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
 
 bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg"
+bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\centipede\\Centipede.egg"
 caramelDansen = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\sample_song\\song.egg"
 
 ffmpegProcessing(bubblePop)
