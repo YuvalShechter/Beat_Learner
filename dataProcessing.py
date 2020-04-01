@@ -8,7 +8,7 @@ from sklearn.preprocessing import normalize
 # Samples is all song data
 # Sample Rate = Song Sample Rate / 2
 # Window S = ((BPM / 60)^-1)
-# Stride Frac = Fraction of Window Size That Composes A Stride (Overlap )
+# Stride Frac = Fraction of Window Size That Composes A Stride (Overlap %)
 def spectrogramize(samples, sample_rate, stride_frac = 0.5, 
                           window_s = 20.0, max_freq = 10000, eps = 1e-14):
 
@@ -44,18 +44,23 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     specgram = np.log(fft[:ind, :] + eps)
     return specgram
 
-def ffmpegProcessing():
+def ffmpegProcessing(songPath):
     mpl.rcParams['agg.path.chunksize'] = 10000
 
     out, _ = (ffmpeg
-        .input("C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg")
-        .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='16k')
+        .input(songPath)
+        .output('-', format='s16le', acodec='pcm_s16le', ac=2, ar='44.1k')
         .overwrite_output()
         .run(capture_stdout=True)
     )
 
     amplitudes = np.frombuffer(out, np.int16)
-    spectrogram = spectrogramize(amplitudes, 1600, 0.5, 0.5042, 15000)
+    # Samples, Sample Rate, Stride Factor, Window Size, Maximum Frequency, Epsilon (don't change)
+    spectrogram = spectrogramize(amplitudes, 44100, 0.25, 0.1, 10000)
+    print(np.shape(spectrogram))
     plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
 
-ffmpegProcessing()
+bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg"
+caramelDansen = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\sample_song\\song.egg"
+
+ffmpegProcessing(bubblePop)
