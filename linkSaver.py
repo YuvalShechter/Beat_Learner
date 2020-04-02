@@ -3,7 +3,7 @@ from pyquery import PyQuery as pq
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0'}
 
-# Script for scraping first 5000 pages of songs on bsaber.com
+# Script for scraping first 691 pages of songs on bsaber.com (arbitrarily based on ratings/number)
 def scrapeLinks(url):
     with open("links", "a+") as linkFile:
         htmlText = requests.get(url, headers=headers).text

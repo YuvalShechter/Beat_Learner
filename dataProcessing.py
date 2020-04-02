@@ -10,7 +10,7 @@ from sklearn.preprocessing import normalize
 # Window S = ((BPM / 60)^-1)
 # Stride Frac = Fraction of Window Size That Composes A Stride (Overlap %)
 def spectrogramize(samples, sample_rate, stride_frac = 0.5, 
-                          window_s = 20.0, max_freq = 10000, eps = 1e-14):
+                          window_s = 0.05, max_freq = 10000, eps = 1e-14):
 
     window_size = int(sample_rate * window_s)
     stride_size = int(window_size * stride_frac)
