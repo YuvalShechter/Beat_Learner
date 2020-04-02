@@ -19,6 +19,7 @@ def download(url, dlDictionary):
         songName = json.load(jsonFile)['_songName']
 
     songName = slugify(songName)
+    print(songName)
     if songName in dlDictionary:
         keyName = songName
         songName+="("+str(dlDictionary[songName])+")"
