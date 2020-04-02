@@ -43,6 +43,8 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     # Compute spectrogram feature
     ind = np.where(freqs <= max_freq)[0][-1] + 1
     # Cuts off maximum frequency then computes log (eps for no error)
+    # Original line: specgram = np.log(fft[:ind, :] + eps)
+    # Cutoff is probably not necessary for network?
     specgram = np.log(fft[:, :] + eps)
     return specgram
 
