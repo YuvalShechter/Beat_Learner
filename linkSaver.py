@@ -10,7 +10,9 @@ def scrapeLinks(url):
         parsedhtmlText = pq(htmlText)
         linkAHrefs = parsedhtmlText(".-download-zip").items()
         for link in linkAHrefs:
-            linkFile.write(link.attr['href']+"\n")
+            difLink = link.attr['href']
+            print(difLink)
+            linkFile.write(difLink+"\n")
 
 if __name__ == "__main__":
     for i in range(1,692):
