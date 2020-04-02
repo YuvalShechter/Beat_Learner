@@ -32,6 +32,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     fft = np.absolute(fft)
     fft = fft**2
     
+    # TODO: Understand what this does
     scale = np.sum(weighting**2) * sample_rate
     fft[1:-1, :] *= (2.0 / scale)
     fft[(0, -1), :] /= scale
@@ -41,7 +42,8 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     
     # Compute spectrogram feature
     ind = np.where(freqs <= max_freq)[0][-1] + 1
-    specgram = np.log(fft[:ind, :] + eps)
+    # Cuts off maximum frequency then computes log (eps for no error)
+    specgram = np.log(fft[:, :] + eps)
     return specgram
 
 def ffmpegProcessing(songPath):
@@ -56,8 +58,11 @@ def ffmpegProcessing(songPath):
 
     amplitudes = np.frombuffer(out, np.int16)
     samplingRate = 44100
-    overlap = 0.25
-    windowSeconds = 0.1
+    # Currently memory stable (actually means 1 - overlap)
+    overlap = 0.5
+    # Required to be this low for some high freq songs
+    windowSeconds = 0.05
+    # Log data points in y 
     maxFreqCutoff = 10000
     isError = True
     # Samples, Sample Rate, Stride Factor, Window Size, Maximum Frequency, Epsilon (don't change)
@@ -66,13 +71,16 @@ def ffmpegProcessing(songPath):
             spectrogram = spectrogramize(amplitudes, samplingRate, overlap, windowSeconds, maxFreqCutoff)
             isError = False
         except MemoryError:
+            print(overlap)
             if overlap == 1.0:
                 raise MemoryError("Not enough RAM boi")
             overlap+=0.25
+    # For some reason results in (freq, t) and not other way around
+    print(np.shape(spectrogram))
     plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
 
 bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg"
-bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\centipede\\Centipede.egg"
+centipede = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\centipede\\Centipede.egg"
 caramelDansen = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\sample_song\\song.egg"
 
 ffmpegProcessing(bubblePop)
