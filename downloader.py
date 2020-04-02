@@ -35,4 +35,3 @@ if __name__ == "__main__":
     with open("links","r+") as downloadLinks:
         for link in downloadLinks:
             fulldictionary = download(link[:-1], fulldictionary)
-        downloadLinks.truncate(0)
