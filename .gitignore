@@ -2,5 +2,6 @@ All Songs/
 sample song/
 beatVenv/
 .vscode/
+__pycache__/
 links
 venv_activate.ps1
