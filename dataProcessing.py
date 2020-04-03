@@ -13,6 +13,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
                           window_s = 0.05, max_freq = 10000, eps = 1e-14):
 
     window_size = int(sample_rate * window_s)
+    print(window_size)
     stride_size = int(window_size * stride_frac)
 
     # Extract strided windows
@@ -49,7 +50,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     return specgram
 
 def ffmpegProcessing(songPath):
-    mpl.rcParams['agg.path.chunksize'] = 10000
+    mpl.rcParams['agg.path.chunksize'] = 1000000
 
     out, _ = (ffmpeg
         .input(songPath)
@@ -57,9 +58,10 @@ def ffmpegProcessing(songPath):
         .overwrite_output()
         .run(capture_stdout=True)
     )
-
     amplitudes = np.frombuffer(out, np.int16)
     samplingRate = 44100
+    songLengthInSeconds = len(amplitudes)/(samplingRate*2)
+    print("Length in Seconds: "+str(songLengthInSeconds))
     # Currently memory stable (actually means 1 - overlap)
     overlap = 0.5
     # Required to be this low for some high freq songs
@@ -85,4 +87,4 @@ bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\
 centipede = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\centipede\\Centipede.egg"
 caramelDansen = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\sample_song\\song.egg"
 
-ffmpegProcessing(bubblePop)
+ffmpegProcessing(centipede)
