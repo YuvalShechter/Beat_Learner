@@ -56,6 +56,11 @@ if __name__ == "__main__":
     with open("links","r+") as downloadLinks:
         for link in downloadLinks:
             if not toSkip:
-                fulldictionary = download(link[:-1], fulldictionary)
+                try:
+                    fulldictionary = download(link[:-1], fulldictionary)
+                except OSError:
+                    with open("./restartDict","w+") as restartF:
+                        json.dump(fulldictionary, restartF)
+                    print("Uncaught Error: Restart With Dictionary")
             else:
                 toSkip-=1
