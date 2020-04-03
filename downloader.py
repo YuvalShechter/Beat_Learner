@@ -21,7 +21,14 @@ def download(url, dlDictionary):
         return dlDictionary
 
     os.remove("All Songs/temp.zip")
-    with open("All Songs/temp/info.dat","r") as jsonFile:
+
+    infoCap = "info.dat"
+    for fname in os.listdir("All Songs/temp"):
+        if fname.lower() == "info.dat":
+            infoCap = fname
+            break
+    
+    with open("All Songs/temp/"+infoCap,"r") as jsonFile:
         songName = json.load(jsonFile)['_songName']
 
     songName = slugify(songName)
