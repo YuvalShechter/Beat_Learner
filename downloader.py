@@ -36,6 +36,8 @@ def download(url, dlDictionary):
         songName = json.load(jsonFile)['_songName']
 
     songName = slugify(songName)
+    if not songName:
+        songName = "_"
     print(songName)
     if songName in dlDictionary:
         keyName = songName
@@ -50,6 +52,10 @@ def download(url, dlDictionary):
 
 if __name__ == "__main__":
     fulldictionary = {}
+    toSkip = len(os.listdir("./All Songs/"))
     with open("links","r+") as downloadLinks:
         for link in downloadLinks:
-            fulldictionary = download(link[:-1], fulldictionary)
+            if not toSkip:
+                fulldictionary = download(link[:-1], fulldictionary)
+            else:
+                toSkip-=1
