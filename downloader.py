@@ -22,11 +22,15 @@ def download(url, dlDictionary):
 
     os.remove("All Songs/temp.zip")
 
-    infoCap = "info.dat"
+    # Checks for info.dat in folder and if doesn't exist skips it
+    infoCap = ""
     for fname in os.listdir("All Songs/temp"):
         if fname.lower() == "info.dat":
             infoCap = fname
             break
+    if not infoCap:
+        print("No Info: "+url)
+        return dlDictionary
     
     with open("All Songs/temp/"+infoCap,"r") as jsonFile:
         songName = json.load(jsonFile)['_songName']
