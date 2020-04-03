@@ -9,6 +9,10 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gec
 def download(url, dlDictionary):
     with open("All Songs/temp.zip", "wb") as outFile:
         response = requests.get(url, headers=headers)
+        # Response when file is not found when downloaded
+        if(response.content == "Not Found"):
+            print(url)
+            return dlDictionary
         outFile.write(response.content)
 
     with zipfile.ZipFile("All Songs/temp.zip", 'r') as zip_ref:
