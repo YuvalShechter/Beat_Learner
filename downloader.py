@@ -1,6 +1,7 @@
 import requests
 import json
 import zipfile
+from zipfile import BadZipfile
 from slugify import slugify
 import os
 
@@ -9,14 +10,15 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gec
 def download(url, dlDictionary):
     with open("All Songs/temp.zip", "wb") as outFile:
         response = requests.get(url, headers=headers)
-        # Response when file is not found when downloaded
-        if(response.content == "Not Found"):
-            print("Not Found: "+url)
-            return dlDictionary
         outFile.write(response.content)
-
-    with zipfile.ZipFile("All Songs/temp.zip", 'r') as zip_ref:
-        zip_ref.extractall("All Songs/temp")
+    
+    # Sometimes download is not found (and so isn't a zip)
+    try:
+        with zipfile.ZipFile("All Songs/temp.zip", 'r') as zip_ref:
+            zip_ref.extractall("All Songs/temp")
+    except BadZipfile:
+        print("Not found: "+url)
+        return dlDictionary
 
     os.remove("All Songs/temp.zip")
     with open("All Songs/temp/info.dat","r") as jsonFile:
