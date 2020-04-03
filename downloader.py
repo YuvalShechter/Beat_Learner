@@ -11,7 +11,7 @@ def download(url, dlDictionary):
         response = requests.get(url, headers=headers)
         # Response when file is not found when downloaded
         if(response.content == "Not Found"):
-            print(url)
+            print("Not Found: "+url)
             return dlDictionary
         outFile.write(response.content)
 
