@@ -62,6 +62,8 @@ def ffmpegProcessing(songPath):
     amplitudes = np.frombuffer(out, np.int16)
     samplingRate = 44100
     songLengthInSeconds = len(amplitudes)/(samplingRate*2)
+    if songLengthInSeconds > 480:
+        return []
     # Currently memory stable (actually means 1 - overlap)
     overlap = 0.5
     # Required to be this low for some high freq songs
@@ -90,9 +92,13 @@ def ffmpegProcessing(songPath):
     # For some reason results in (freq, t) and not other way around
     # plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
 
+# converts song to spectrogram to pickle file
+# pickle file contains 2d spectrogram array
 for folder in os.listdir("All Songs/"):
     if os.path.isdir("All Songs/"+folder):
         for currFile in os.listdir("All Songs/"+folder):
             if ".egg" in currFile:
-                with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
-                    pickle.dump(ffmpegProcessing("All Songs/"+folder+"/"+currFile), fp)
+                postProcess = ffmpegProcessing("All Songs/"+folder+"/"+currFile)
+                if len(postProcess):
+                    with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
+                        pickle.dump(postProcess, fp)
