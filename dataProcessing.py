@@ -52,7 +52,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
 
 def ffmpegProcessing(songPath):
     # mpl.rcParams['agg.path.chunksize'] = 10000
-
+    print(songPath)
     out, _ = (ffmpeg
         .input(songPath)
         .output('-', format='s16le', acodec='pcm_s16le', ac=2, ar='44.1k')
