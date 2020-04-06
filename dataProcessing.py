@@ -2,6 +2,8 @@ import ffmpeg
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import pickle
 from sklearn.preprocessing import normalize
 
 # Algorithm from: https://towardsdatascience.com/understanding-audio-data-fourier-transform-fft-spectrogram-and-speech-recognition-a4072d228520
@@ -13,7 +15,6 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
                           window_s = 0.05, max_freq = 10000, eps = 1e-14):
 
     window_size = int(sample_rate * window_s)
-    print(window_size)
     stride_size = int(window_size * stride_frac)
 
     # Extract strided windows
@@ -50,7 +51,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     return specgram
 
 def ffmpegProcessing(songPath):
-    mpl.rcParams['agg.path.chunksize'] = 1000000
+    mpl.rcParams['agg.path.chunksize'] = 10000
 
     out, _ = (ffmpeg
         .input(songPath)
@@ -61,11 +62,10 @@ def ffmpegProcessing(songPath):
     amplitudes = np.frombuffer(out, np.int16)
     samplingRate = 44100
     songLengthInSeconds = len(amplitudes)/(samplingRate*2)
-    print("Length in Seconds: "+str(songLengthInSeconds))
     # Currently memory stable (actually means 1 - overlap)
     overlap = 0.5
     # Required to be this low for some high freq songs
-    windowSeconds = 0.05
+    windowSeconds = 0.04
     # Log data points in y 
     maxFreqCutoff = 10000
     isError = True
@@ -75,16 +75,25 @@ def ffmpegProcessing(songPath):
             spectrogram = spectrogramize(amplitudes, samplingRate, overlap, windowSeconds, maxFreqCutoff)
             isError = False
         except MemoryError:
-            print(overlap)
             if overlap == 1.0:
                 raise MemoryError("Not enough RAM boi")
-            overlap+=0.25
+            overlap+=((1 - overlap)/2)
+    
+    return spectrogram
+
+    # with open("outfile","a") as outfile:
+    #     outfile.write("Length in Seconds: "+str(songLengthInSeconds)+"\n")
+    #     outfile.write("Shape: "+str(np.shape(spectrogram))+"\n")
+    #     outfile.write("Frames Per Second: "+str(songLengthInSeconds / np.shape(spectrogram)[1])+"\n")
+    #     outfile.write("\n")
+
     # For some reason results in (freq, t) and not other way around
-    print(np.shape(spectrogram))
-    plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
+    # plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
 
-bubblePop = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\bubble-pop\\bubblepop.egg"
-centipede = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\All Songs\\centipede\\Centipede.egg"
-caramelDansen = "C:\\Users\\yuval\\Beat Saber AutoGeneration\\sample_song\\song.egg"
-
-ffmpegProcessing(centipede)
+for folder in os.listdir("All Songs/"):
+    if os.path.isdir("All Songs/"+folder):
+        songName = ""
+        for currFile in os.listdir("All Songs/"+folder):
+            if ".egg" in currFile:
+                with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
+                    pickle.write(ffmpegProcessing("All Songs/"+folder+"/"+currFile), fp)
