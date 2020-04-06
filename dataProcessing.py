@@ -8,7 +8,7 @@ from sklearn.preprocessing import normalize
 
 # Algorithm from: https://towardsdatascience.com/understanding-audio-data-fourier-transform-fft-spectrogram-and-speech-recognition-a4072d228520
 # Samples is all song data
-# Sample Rate = Song Sample Rate / 2
+# Sample Rate = Song Sample Rate
 # Window S = ((BPM / 60)^-1)
 # Stride Frac = Fraction of Window Size That Composes A Stride (Overlap %)
 def spectrogramize(samples, sample_rate, stride_frac = 0.5, 
@@ -59,9 +59,12 @@ def ffmpegProcessing(songPath):
         .overwrite_output()
         .run(capture_stdout=True)
     )
+    # Read in pcm data points
     amplitudes = np.frombuffer(out, np.int16)
     samplingRate = 44100
+    # Calculates song length in seconds
     songLengthInSeconds = len(amplitudes)/(samplingRate*2)
+    # Checks song length is under 8 minutes (arbitrary cutoff)
     if songLengthInSeconds > 480:
         return []
     # Currently memory stable (actually means 1 - overlap)
