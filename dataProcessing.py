@@ -96,4 +96,4 @@ for folder in os.listdir("All Songs/"):
         for currFile in os.listdir("All Songs/"+folder):
             if ".egg" in currFile:
                 with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
-                    pickle.write(ffmpegProcessing("All Songs/"+folder+"/"+currFile), fp)
+                    pickle.dump(ffmpegProcessing("All Songs/"+folder+"/"+currFile), fp)
