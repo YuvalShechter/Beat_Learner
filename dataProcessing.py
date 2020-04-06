@@ -101,7 +101,12 @@ for folder in os.listdir("All Songs/"):
     if os.path.isdir("All Songs/"+folder):
         for currFile in os.listdir("All Songs/"+folder):
             if ".egg" in currFile:
-                postProcess = ffmpegProcessing("All Songs/"+folder+"/"+currFile)
-                if len(postProcess):
-                    with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
-                        pickle.dump(postProcess, fp)
+                try:
+                    postProcess = ffmpegProcessing("All Songs/"+folder+"/"+currFile)
+                    if len(postProcess):
+                        with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
+                            pickle.dump(postProcess, fp)
+                except:
+                    with open("error.log","a") as logfile:
+                        logfile.write("Error Processing: All Songs/"+folder+"/"+currFile)
+                        logfile.write("\n")
