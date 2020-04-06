@@ -51,7 +51,7 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     return specgram
 
 def ffmpegProcessing(songPath):
-    mpl.rcParams['agg.path.chunksize'] = 10000
+    # mpl.rcParams['agg.path.chunksize'] = 10000
 
     out, _ = (ffmpeg
         .input(songPath)
