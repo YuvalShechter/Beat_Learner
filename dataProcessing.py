@@ -92,7 +92,6 @@ def ffmpegProcessing(songPath):
 
 for folder in os.listdir("All Songs/"):
     if os.path.isdir("All Songs/"+folder):
-        songName = ""
         for currFile in os.listdir("All Songs/"+folder):
             if ".egg" in currFile:
                 with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
