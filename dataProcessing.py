@@ -111,3 +111,5 @@ for folder in os.listdir("All Songs/"):
                     with open("error.log","a") as logfile:
                         logfile.write("Error Processing: All Songs/"+folder+"/"+currFile)
                         logfile.write("\n")
+
+# current PID = 19375
