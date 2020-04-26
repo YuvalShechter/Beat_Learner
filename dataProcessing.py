@@ -110,7 +110,7 @@ for folder in os.listdir(songDirectory):
                 except Exception as e:
                     print(e)
                     with open("error.log","a") as logfile:
-                        logfile.write("Error Processing: All Songs/"+folder+"/"+currFile)
+                        logfile.write("Error Processing: "+songDirectory+folder+"/"+currFile)
                         logfile.write("\n")
 
 # current PID = 22311
