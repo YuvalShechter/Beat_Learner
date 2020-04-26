@@ -97,14 +97,15 @@ def ffmpegProcessing(songPath):
 
 # converts song to spectrogram to pickle file
 # pickle file contains 2d spectrogram array
-for folder in os.listdir("All Songs/"):
-    if os.path.isdir("All Songs/"+folder):
-        for currFile in os.listdir("All Songs/"+folder):
+songDirectory = "All Songs/Beat_Saber_Dataset/"
+for folder in os.listdir(songDirectory):
+    if os.path.isdir(songDirectory+folder):
+        for currFile in os.listdir(songDirectory+folder):
             if ".egg" in currFile:
                 try:
-                    postProcess = ffmpegProcessing("All Songs/"+folder+"/"+currFile)
+                    postProcess = ffmpegProcessing(songDirectory+folder+"/"+currFile)
                     if len(postProcess):
-                        with open("All Songs/"+folder+"/spectrogram", 'wb') as fp:
+                        with open(songDirectory+folder+"/spectrogram", 'wb') as fp:
                             pickle.dump(postProcess, fp)
                 except Exception as e:
                     print(e)
@@ -112,4 +113,4 @@ for folder in os.listdir("All Songs/"):
                         logfile.write("Error Processing: All Songs/"+folder+"/"+currFile)
                         logfile.write("\n")
 
-# current PID = 19375
+# current PID = 22311
