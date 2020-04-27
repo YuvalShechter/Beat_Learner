@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pickle
+import sys
 from sklearn.preprocessing import normalize
 
 # Algorithm from: https://towardsdatascience.com/understanding-audio-data-fourier-transform-fft-spectrogram-and-speech-recognition-a4072d228520
@@ -55,7 +56,7 @@ def ffmpegProcessing(songPath):
     print(songPath)
     out, _ = (ffmpeg
         .input(songPath)
-        .output('-', format='s16le', acodec='pcm_s16le', ac=2, ar='44.1k')
+        .output('-', format='s16le', acodec='pcm_s16le', ac=2, ar='44.1k', hide_banner=True)
         .overwrite_output()
         .run(capture_stdout=True)
     )
@@ -70,7 +71,7 @@ def ffmpegProcessing(songPath):
     # Currently memory stable (actually means 1 - overlap)
     overlap = 0.5
     # Required to be this low for some high freq songs
-    windowSeconds = 0.04
+    windowSeconds = 0.02
     # Log data points in y 
     maxFreqCutoff = 10000
     isError = True
@@ -78,6 +79,11 @@ def ffmpegProcessing(songPath):
     while(isError):
         try:
             spectrogram = spectrogramize(amplitudes, samplingRate, overlap, windowSeconds, maxFreqCutoff)
+            secondsPerWindowActual = round(songLengthInSeconds/np.shape(spectrogram)[1], 3)
+            if secondsPerWindowActual != 0.005:
+                with open("Logs/incorrect_step.log","a+") as incorrectStepF:
+                    incorrectStepF.write(songPath+" ["+str(secondsPerWindowActual)+"]")
+                    incorrectStepF.write("\n")
             isError = False
         except MemoryError:
             if overlap == 1.0:
@@ -86,18 +92,13 @@ def ffmpegProcessing(songPath):
     
     return spectrogram
 
-    # with open("outfile","a") as outfile:
-    #     outfile.write("Length in Seconds: "+str(songLengthInSeconds)+"\n")
-    #     outfile.write("Shape: "+str(np.shape(spectrogram))+"\n")
-    #     outfile.write("Frames Per Second: "+str(songLengthInSeconds / np.shape(spectrogram)[1])+"\n")
-    #     outfile.write("\n")
-
-    # For some reason results in (freq, t) and not other way around
-    # plt.imsave("spectrogram.png", spectrogram, dpi=np.shape(spectrogram)[0]*np.shape(spectrogram)[1], cmap='hsv')
+[os.remove("Logs/"+f) for f in os.listdir("Logs/")]
 
 # converts song to spectrogram to pickle file
 # pickle file contains 2d spectrogram array
-songDirectory = "All Songs/Beat_Saber_Dataset/"
+# "All Songs/Beat_Saber_Dataset/" for actual
+# "All Songs/" for testing
+songDirectory = sys.argv[1]
 for folder in os.listdir(songDirectory):
     if os.path.isdir(songDirectory+folder):
         for currFile in os.listdir(songDirectory+folder):
@@ -109,7 +110,7 @@ for folder in os.listdir(songDirectory):
                             pickle.dump(postProcess, fp)
                 except Exception as e:
                     print(e)
-                    with open("error.log","a") as logfile:
+                    with open("Logs/error.log","a") as logfile:
                         logfile.write("Error Processing: "+songDirectory+folder+"/"+currFile)
                         logfile.write("\n")
 
