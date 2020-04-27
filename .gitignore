@@ -3,5 +3,6 @@ sample song/
 beatVenv/
 .vscode/
 __pycache__/
+Logs/
 links
 venv_activate.ps1
