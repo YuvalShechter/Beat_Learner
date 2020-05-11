@@ -7,6 +7,8 @@ import pickle
 import sys
 from sklearn.preprocessing import normalize
 
+SAMPLINGRATE = 44100
+
 # Algorithm from: https://towardsdatascience.com/understanding-audio-data-fourier-transform-fft-spectrogram-and-speech-recognition-a4072d228520
 # Samples is all song data
 # Sample Rate = Song Sample Rate
@@ -51,34 +53,34 @@ def spectrogramize(samples, sample_rate, stride_frac = 0.5,
     specgram = np.log(fft[:, :] + eps)
     return specgram
 
-def ffmpegProcessing(songPath):
+# Path to song, Song length in seconds
+def ffmpegProcessing(songPath, songlengthcutoff):
     # mpl.rcParams['agg.path.chunksize'] = 10000
-    print(songPath)
+    print(songPath+"\n")
     out, _ = (ffmpeg
         .input(songPath)
-        .output('-', format='s16le', acodec='pcm_s16le', ac=2, ar='44.1k', hide_banner=True)
+        .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='44.1k')
         .overwrite_output()
         .run(capture_stdout=True)
     )
     # Read in pcm data points
     amplitudes = np.frombuffer(out, np.int16)
-    samplingRate = 44100
     # Calculates song length in seconds
-    songLengthInSeconds = len(amplitudes)/(samplingRate*2)
-    # Checks song length is under 8 minutes (arbitrary cutoff)
-    if songLengthInSeconds > 480:
+    songLengthInSeconds = len(amplitudes)/SAMPLINGRATE
+    # Checks song length is under 8 minutes (arbitrary cutoff) (480 seconds)
+    if songLengthInSeconds > songlengthcutoff:
         return []
     # Currently memory stable (actually means 1 - overlap)
     overlap = 0.5
     # Required to be this low for some high freq songs
-    windowSeconds = 0.02
+    windowSeconds = 0.01
     # Log data points in y 
     maxFreqCutoff = 10000
     isError = True
     # Samples, Sample Rate, Stride Factor, Window Size, Maximum Frequency, Epsilon (don't change)
     while(isError):
         try:
-            spectrogram = spectrogramize(amplitudes, samplingRate, overlap, windowSeconds, maxFreqCutoff)
+            spectrogram = spectrogramize(amplitudes, SAMPLINGRATE, overlap, windowSeconds, maxFreqCutoff)
             secondsPerWindowActual = round(songLengthInSeconds/np.shape(spectrogram)[1], 3)
             if secondsPerWindowActual != 0.005:
                 with open("Logs/incorrect_step.log","a+") as incorrectStepF:
@@ -92,26 +94,30 @@ def ffmpegProcessing(songPath):
     
     return spectrogram
 
-[os.remove("Logs/"+f) for f in os.listdir("Logs/")]
+[os.remove(os.path.join("Logs",f)) for f in os.listdir("Logs/")]
 
 # converts song to spectrogram to pickle file
 # pickle file contains 2d spectrogram array
 # "All Songs/Beat_Saber_Dataset/" for actual
 # "All Songs/" for testing
 songDirectory = sys.argv[1]
+# Iterate over each item in directory
 for folder in os.listdir(songDirectory):
-    if os.path.isdir(songDirectory+folder):
-        for currFile in os.listdir(songDirectory+folder):
+    # Check if item is directory
+    if os.path.isdir(os.path.join(songDirectory,folder)):
+        # Iterate over items in directory
+        for currFile in os.listdir(os.path.join(songDirectory,folder)):
+            # Check if song exists
             if ".egg" in currFile:
                 try:
-                    postProcess = ffmpegProcessing(songDirectory+folder+"/"+currFile)
+                    postProcess = ffmpegProcessing(os.path.join(songDirectory,folder,currFile),480)
                     if len(postProcess):
-                        with open(songDirectory+folder+"/spectrogram", 'wb') as fp:
+                        with open(os.path.join(songDirectory,folder,"spectrogram"), 'wb') as fp:
                             pickle.dump(postProcess, fp)
                 except Exception as e:
                     print(e)
                     with open("Logs/error.log","a") as logfile:
-                        logfile.write("Error Processing: "+songDirectory+folder+"/"+currFile)
+                        logfile.write("Error Processing: "+os.path.join(songDirectory,folder,currFile))
                         logfile.write("\n")
 
 # current PID = 22311
