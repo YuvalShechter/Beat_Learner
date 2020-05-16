@@ -120,4 +120,4 @@ for folder in os.listdir(songDirectory):
                         logfile.write("Error Processing: "+os.path.join(songDirectory,folder,currFile))
                         logfile.write("\n")
 
-# current PID = 22311
+# current PID = 22197
